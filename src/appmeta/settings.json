@@ -1,0 +1,58 @@
+{
+  "format_version": 1,
+  "version": 1,
+  "fields": {
+    "color": {
+      "label": "Color",
+      "type": "enum",
+      "default": "green",
+      "options": [
+        { "value": "green", "label": "Green" },
+        { "value": "amber", "label": "Amber" },
+        { "value": "red", "label": "Red" },
+        { "value": "cyan", "label": "Cyan" },
+        { "value": "white", "label": "White" },
+        { "value": "custom", "label": "Custom" }
+      ]
+    },
+    "custom_color": {
+      "label": "Custom color",
+      "description": "Used when Color is Custom. Change it in the Web UI.",
+      "type": "color",
+      "default": "#00FF00"
+    },
+    "shape": {
+      "label": "Bit shape",
+      "type": "enum",
+      "default": "square",
+      "options": [
+        { "value": "square", "label": "Square" },
+        { "value": "rectangle", "label": "Rectangle" }
+      ]
+    },
+    "spacing": {
+      "label": "Spacing",
+      "type": "enum",
+      "default": "medium",
+      "options": [
+        { "value": "tight", "label": "Tight" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "wide", "label": "Wide" }
+      ]
+    },
+    "show_seconds": {
+      "label": "Show seconds",
+      "type": "boolean",
+      "default": true
+    },
+    "time_format": {
+      "label": "Time format",
+      "type": "enum",
+      "default": "24h",
+      "options": [
+        { "value": "24h", "label": "24-hour" },
+        { "value": "12h", "label": "12-hour" }
+      ]
+    }
+  }
+}
