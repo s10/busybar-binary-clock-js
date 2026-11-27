@@ -63,13 +63,26 @@ test("frameGrid span for every shape, spacing and column count", () => {
     ["rectangle", "tight", 6, 13, 57],
     ["rectangle", "medium", 6, 9, 62],
     ["rectangle", "wide", 6, 2, 69],
-    ["rectangle", "tight", 4, 21, 49],
-    ["rectangle", "medium", 4, 19, 52],
-    ["rectangle", "wide", 4, 15, 56],
+    ["rectangle", "tight", 4, 13, 57],
+    ["rectangle", "medium", 4, 9, 62],
+    ["rectangle", "wide", 4, 3, 68],
   ];
 
   for (const [shape, spacing, n, first, last] of cases) {
     const row = frameGrid([1, 4, 5, 4, 3, 7].slice(0, n), { ...DEFAULTS, shape, spacing })[1];
     assert.deepEqual([row.search(/[o#]/), row.search(/[o#]\.*$/)], [first, last], `${shape} ${spacing} ${n}`);
   }
+});
+
+test("rectangle bits widen when seconds are off, squares do not", () => {
+  const widths = (shape: Shape, spacing: Spacing, n: number) => {
+    const row = frameGrid([8, 8, 8, 8, 8, 8].slice(0, n), { ...DEFAULTS, shape, spacing })[1];
+    return (row.match(/#+/g) ?? []).map((run) => run.length);
+  };
+
+  assert.deepEqual(widths("rectangle", "tight", 6), [6, 6, 6, 6, 6, 6]);
+  assert.deepEqual(widths("rectangle", "tight", 4), [10, 10, 10, 10]);
+  assert.deepEqual(widths("rectangle", "medium", 4), [11, 11, 11, 11]);
+  assert.deepEqual(widths("rectangle", "wide", 4), [12, 12, 12, 12]);
+  assert.deepEqual(widths("square", "wide", 4), [3, 3, 3, 3]);
 });

@@ -1,15 +1,39 @@
-import type { Settings, Shape, Spacing } from "./settings.ts";
+import type { Settings, Spacing } from "./settings.ts";
 
 export const WIDTH = 72;
 export const HEIGHT = 16;
 
 const BIT_HEIGHT = 3;
-const BIT_WIDTH: Record<Shape, number> = { square: 3, rectangle: 6 };
-const GAPS: Record<Spacing, { pair: number; group: number }> = {
+const SQUARE_WIDTH = 3;
+const RECTANGLE_WIDTH = 6;
+const FULL_COLUMNS = 6;
+
+interface Gaps {
+  pair: number;
+  group: number;
+}
+
+const GAPS: Record<Spacing, Gaps> = {
   tight: { pair: 1, group: 3 },
   medium: { pair: 2, group: 6 },
   wide: { pair: 4, group: 10 },
 };
+
+function gapsWidth(columns: number, gaps: Gaps): number {
+  const pairs = columns / 2;
+  return pairs * gaps.pair + (pairs - 1) * gaps.group;
+}
+
+/** Rectangles widen so that fewer columns keep the width of the six-column layout. */
+function bitWidth(settings: Settings, columns: number): number {
+  if (settings.shape === "square") {
+    return SQUARE_WIDTH;
+  }
+
+  const gaps = GAPS[settings.spacing];
+  const fullWidth = FULL_COLUMNS * RECTANGLE_WIDTH + gapsWidth(FULL_COLUMNS, gaps);
+  return Math.floor((fullWidth - gapsWidth(columns, gaps)) / columns);
+}
 
 /** Tens and ones of hours, minutes and, with show_seconds, seconds. */
 export function timeDigits(now: Date, settings: Settings): number[] {
@@ -29,18 +53,17 @@ export function timeDigits(now: Date, settings: Settings): number[] {
 
 /** HEIGHT rows of WIDTH characters: "." background, "o" 0 bit, "#" 1 bit. */
 export function frameGrid(digits: number[], settings: Settings): string[] {
-  const bitWidth = BIT_WIDTH[settings.shape];
   const gaps = GAPS[settings.spacing];
-  const pairs = digits.length / 2;
-  const width = digits.length * bitWidth + pairs * gaps.pair + (pairs - 1) * gaps.group;
+  const bit = bitWidth(settings, digits.length);
+  const width = digits.length * bit + gapsWidth(digits.length, gaps);
   const left = Math.floor((WIDTH - width) / 2);
   const blank = ".".repeat(WIDTH);
 
   const grid = [blank];
-  for (let bit = 3; bit >= 0; bit--) {
+  for (let place = 3; place >= 0; place--) {
     let row = ".".repeat(left);
     digits.forEach((digit, column) => {
-      row += ((digit >> bit) & 1 ? "#" : "o").repeat(bitWidth);
+      row += ((digit >> place) & 1 ? "#" : "o").repeat(bit);
       if (column < digits.length - 1) {
         row += ".".repeat(column % 2 === 0 ? gaps.pair : gaps.group);
       }
@@ -50,7 +73,7 @@ export function frameGrid(digits: number[], settings: Settings): string[] {
     for (let i = 0; i < BIT_HEIGHT; i++) {
       grid.push(row);
     }
-    if (bit > 0) {
+    if (place > 0) {
       grid.push(blank);
     }
   }
