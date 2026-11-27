@@ -67,7 +67,9 @@ function main() {
     }
 
     stopped = true;
-    clearTimeout(redrawTimer);
+    if (redrawTimer !== undefined) {
+      clearTimeout(redrawTimer);
+    }
 
     setTimeout(unbind, 10);
   });
