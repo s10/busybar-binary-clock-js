@@ -81,8 +81,10 @@ test("frameGrid span for every shape, spacing and column count", () => {
   ];
 
   for (const [shape, spacing, n, first, last] of cases) {
-    const row = frameGrid([1, 4, 5, 4, 3, 7].slice(0, n), { ...DEFAULTS, shape, spacing })[1];
+    const grid = frameGrid([1, 4, 5, 4, 3, 7].slice(0, n), { ...DEFAULTS, shape, spacing });
+    const row = grid[1];
     assert.deepEqual([row.search(/[o#]/), row.search(/[o#]\.*$/)], [first, last], `${shape} ${spacing} ${n}`);
+    assert.deepEqual([grid.length, ...new Set(grid.map((r) => r.length))], [16, 72], `${shape} ${spacing} ${n} size`);
   }
 });
 

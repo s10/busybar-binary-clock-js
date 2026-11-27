@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { DEFAULTS, onColor, resolveSettings, type ColorPreset } from "../src/settings.ts";
 
@@ -27,7 +28,7 @@ test("every shape is accepted", () => {
 });
 
 test("a bad field falls back alone", () => {
-  const s = resolveSettings({ color: "pink", shape: "rectangle", spacing: 3, show_seconds: "yes", time_format: "12h" });
+  const s = resolveSettings({ color: "pink", shape: "rectangle", spacing: 3, show_seconds: 0, time_format: "12h" });
   assert.deepEqual(s, { ...DEFAULTS, shape: "rectangle", time_format: "12h" });
 });
 
@@ -44,4 +45,20 @@ test("onColor maps presets and custom", () => {
     ["green", "amber", "red", "cyan", "white", "custom"].map(of),
     ["#00FF00", "#FFB000", "#FF0000", "#00FFFF", "#FFFFFF", "#123456"],
   );
+});
+
+test("settings.json offers what the code accepts", () => {
+  const schema = JSON.parse(readFileSync(new URL("../src/appmeta/settings.json", import.meta.url), "utf8"));
+  const fields: Record<string, { default: unknown; options?: { value: string }[] }> = schema.fields;
+
+  assert.deepEqual(Object.keys(fields), Object.keys(DEFAULTS));
+
+  for (const [key, field] of Object.entries(fields)) {
+    assert.equal(field.default, DEFAULTS[key as keyof typeof DEFAULTS], key);
+
+    for (const option of field.options ?? []) {
+      const resolved = resolveSettings({ [key]: option.value });
+      assert.equal(resolved[key as keyof typeof DEFAULTS], option.value, key + " " + option.value);
+    }
+  }
 });
