@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { frameGrid, msToNextSecond, timeDigits } from "../src/frame.ts";
+import { bitColumns, fadeColumns, frameGrid, msToNextSecond, renderGrid, timeDigits } from "../src/frame.ts";
 import { DEFAULTS, type Shape, type Spacing } from "../src/settings.ts";
 
 const at = (h: number, m: number, s: number) => new Date(2026, 10, 27, h, m, s);
@@ -116,4 +116,26 @@ test("msToNextSecond lands on the next whole second", () => {
   assert.equal(msToNextSecond(1999), 1);
   assert.equal(msToNextSecond(2000), 1000);
   assert.equal(msToNextSecond(1795785600123), 877);
+});
+
+test("bitColumns lists each digit top bit first", () => {
+  assert.deepEqual(bitColumns([1, 4]), ["ooo#", "o#oo"]);
+  assert.deepEqual(bitColumns([9, 0, 8]), ["#oo#", "oooo", "#ooo"]);
+});
+
+test("fadeColumns marks changing bits with the in-between levels", () => {
+  assert.deepEqual(fadeColumns([0, 9], [1, 0], 1), ["oooa", "boob"]);
+  assert.deepEqual(fadeColumns([0, 9], [1, 0], 2), ["ooob", "aooa"]);
+  assert.deepEqual(fadeColumns([1, 4], [1, 4], 1), bitColumns([1, 4]));
+});
+
+test("renderGrid draws any symbol and agrees with frameGrid", () => {
+  const rectangle = { ...DEFAULTS, shape: "rectangle" as const, spacing: "wide" as const };
+  for (const settings of [DEFAULTS, rectangle]) {
+    assert.deepEqual(renderGrid(bitColumns([1, 4, 5, 4, 3, 7]), settings), frameGrid([1, 4, 5, 4, 3, 7], settings));
+  }
+
+  const g = renderGrid(fadeColumns([1, 4, 5, 4, 3, 9], [1, 4, 5, 4, 4, 0], 1), DEFAULTS);
+  assert.equal(g[1], "..................ooo..ooo......ooo..ooo......ooo..bbb..................");
+  assert.equal(g[5], "..................ooo..###......###..###......aaa..ooo..................");
 });

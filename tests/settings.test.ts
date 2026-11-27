@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { DEFAULTS, onColor, resolveSettings, type ColorPreset } from "../src/settings.ts";
+import { DEFAULTS, framePalette, mix, onColor, resolveSettings, type ColorPreset } from "../src/settings.ts";
 
 test("no values give the defaults", () => {
   for (const v of [undefined, null, {}, "x", 5]) {
@@ -17,6 +17,7 @@ test("valid values are kept", () => {
     spacing: "wide",
     show_seconds: false,
     time_format: "12h",
+    effect: "fade",
   };
   assert.deepEqual(resolveSettings(v), v);
 });
@@ -61,4 +62,27 @@ test("settings.json offers what the code accepts", () => {
       assert.equal(resolved[key as keyof typeof DEFAULTS], option.value, key + " " + option.value);
     }
   }
+});
+
+test("the change effect is off unless asked for", () => {
+  assert.equal(DEFAULTS.effect, "none");
+  assert.equal(resolveSettings({ effect: "fade" }).effect, "fade");
+  assert.equal(resolveSettings({ effect: "sparkle" }).effect, "none");
+});
+
+test("mix blends two colors", () => {
+  assert.equal(mix("#262626", "#00FF00", 0), "#262626");
+  assert.equal(mix("#262626", "#00FF00", 1 / 3), "#196e19");
+  assert.equal(mix("#262626", "#00FF00", 2 / 3), "#0db70d");
+  assert.equal(mix("#262626", "#00FF00", 1), "#00ff00");
+});
+
+test("framePalette has a color for every symbol a frame can hold", () => {
+  assert.deepEqual(framePalette({ ...DEFAULTS, color: "red" }), {
+    ".": "#000000",
+    o: "#262626",
+    a: "#6e1919",
+    b: "#b70d0d",
+    "#": "#FF0000",
+  });
 });

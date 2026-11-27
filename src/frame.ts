@@ -59,20 +59,38 @@ export function timeDigits(now: Date, settings: Settings): number[] {
   return digits;
 }
 
-/** HEIGHT rows of WIDTH characters: "." background, "o" 0 bit, "#" 1 bit. */
+/** One string per column, top bit first: "o" 0 bit, "#" 1 bit. */
+export function bitColumns(digits: number[]): string[] {
+  return digits.map((digit) => [3, 2, 1, 0].map((place) => ((digit >> place) & 1 ? "#" : "o")).join(""));
+}
+
+/** Columns on the way from one time to the next: a changing bit is "a" (one third lit) or "b" (two thirds). */
+export function fadeColumns(from: number[], to: number[], step: 1 | 2): string[] {
+  const was = bitColumns(from);
+
+  return bitColumns(to).map((column, c) =>
+    [...column].map((bit, r) => (bit === was[c][r] ? bit : (bit === "#") === (step === 2) ? "b" : "a")).join(""),
+  );
+}
+
 export function frameGrid(digits: number[], settings: Settings): string[] {
-  const { bit, gaps } = layout(settings, digits.length);
-  const width = digits.length * bit + gapsWidth(digits.length, gaps);
+  return renderGrid(bitColumns(digits), settings);
+}
+
+/** HEIGHT rows of WIDTH characters: "." background, then the symbol of each bit. */
+export function renderGrid(columns: string[], settings: Settings): string[] {
+  const { bit, gaps } = layout(settings, columns.length);
+  const width = columns.length * bit + gapsWidth(columns.length, gaps);
   const left = Math.floor((WIDTH - width) / 2);
   const blank = ".".repeat(WIDTH);
 
   const grid = [blank];
-  for (let place = 3; place >= 0; place--) {
+  for (let r = 0; r < 4; r++) {
     let row = ".".repeat(left);
-    digits.forEach((digit, column) => {
-      row += ((digit >> place) & 1 ? "#" : "o").repeat(bit);
-      if (column < digits.length - 1) {
-        row += ".".repeat(column % 2 === 0 ? gaps.pair : gaps.group);
+    columns.forEach((column, c) => {
+      row += column[r].repeat(bit);
+      if (c < columns.length - 1) {
+        row += ".".repeat(c % 2 === 0 ? gaps.pair : gaps.group);
       }
     });
     row += ".".repeat(WIDTH - row.length);
@@ -80,7 +98,7 @@ export function frameGrid(digits: number[], settings: Settings): string[] {
     for (let i = 0; i < BIT_HEIGHT; i++) {
       grid.push(row);
     }
-    if (place > 0) {
+    if (r < 3) {
       grid.push(blank);
     }
   }

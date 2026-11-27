@@ -26,6 +26,7 @@ The enlarged pictures are drawn from the 72×16 captures in `screenshots/1.png` 
 | Spacing | Tight, Medium, Wide | Medium |
 | Show seconds | On, off | On |
 | Time format | 24-hour, 12-hour. The 12-hour clock has no AM/PM mark | 24-hour |
+| Change effect | Off, Fade. With Fade a bit that changes passes through two in-between brightness steps | Off |
 
 Long rectangles with seconds do not fit at wide spacing, so they are drawn at medium spacing then.
 

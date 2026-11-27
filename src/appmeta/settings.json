@@ -55,6 +55,16 @@
         { "value": "24h", "label": "24-hour" },
         { "value": "12h", "label": "12-hour" }
       ]
+    },
+    "effect": {
+      "label": "Change effect",
+      "description": "What a bit does when it changes.",
+      "type": "enum",
+      "default": "none",
+      "options": [
+        { "value": "none", "label": "Off" },
+        { "value": "fade", "label": "Fade" }
+      ]
     }
   }
 }

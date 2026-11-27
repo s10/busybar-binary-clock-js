@@ -1,7 +1,7 @@
 import { appsSettingsGet, BusyBarAppClient, displayDraw, generateXpm2 } from "@busy-app/busy-lib";
 import { id as APP } from "./appmeta/manifest.json";
-import { frameGrid, msToNextSecond, timeDigits } from "./frame.ts";
-import { BACKGROUND, DEFAULTS, OFF_COLOR, onColor, resolveSettings } from "./settings.ts";
+import { fadeColumns, frameGrid, msToNextSecond, renderGrid, timeDigits } from "./frame.ts";
+import { DEFAULTS, framePalette, resolveSettings } from "./settings.ts";
 
 const client = new BusyBarAppClient({ addr: __BUSY_ADDR__ });
 
@@ -23,8 +23,16 @@ async function loadSettings() {
 function main() {
   let stopped = false;
   let shownFrame = "";
+  let shownDigits: number[] = [];
   let palette: Record<string, string> = {};
   let redrawTimer: ReturnType<typeof setTimeout> | undefined;
+
+  async function send(grid: string[]) {
+    await displayDraw(client, {
+      application_name: APP,
+      elements: [{ id: "frame", type: "xpmbitmap", x: 0, y: 0, data: generateXpm2({ palette, grid }) }],
+    });
+  }
 
   async function draw() {
     if (stopped) {
@@ -32,15 +40,19 @@ function main() {
     }
 
     try {
-      const grid = frameGrid(timeDigits(new Date(), settings), settings);
+      const digits = timeDigits(new Date(), settings);
+      const grid = frameGrid(digits, settings);
       const next = grid.join("\n");
 
       if (next !== shownFrame) {
-        await displayDraw(client, {
-          application_name: APP,
-          elements: [{ id: "frame", type: "xpmbitmap", x: 0, y: 0, data: generateXpm2({ palette, grid }) }],
-        });
+        if (settings.effect === "fade" && shownDigits.length === digits.length) {
+          await send(renderGrid(fadeColumns(shownDigits, digits, 1), settings));
+          await send(renderGrid(fadeColumns(shownDigits, digits, 2), settings));
+        }
+
+        await send(grid);
         shownFrame = next;
+        shownDigits = digits;
       }
     } catch (err) {
       report(err);
@@ -57,7 +69,7 @@ function main() {
 
   async function start() {
     await loadSettings();
-    palette = { ".": BACKGROUND, o: OFF_COLOR, "#": onColor(settings) };
+    palette = framePalette(settings);
     await tick();
   }
 
