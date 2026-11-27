@@ -7,7 +7,7 @@ const COLOR_PRESETS = {
 } as const;
 
 const COLORS = [...Object.keys(COLOR_PRESETS), "custom"] as ColorPreset[];
-const SHAPES = ["square", "rectangle"] as const;
+const SHAPES = ["square", "rectangle", "long", "fill"] as const;
 const SPACINGS = ["tight", "medium", "wide"] as const;
 const TIME_FORMATS = ["24h", "12h"] as const;
 

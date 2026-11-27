@@ -22,10 +22,12 @@ The enlarged pictures are drawn from the 72×16 captures in `screenshots/1.png` 
 |---|---|---|
 | Color | Green, Amber, Red, Cyan, White, Custom | Green |
 | Custom color | Any color; used when Color is Custom. Change it in the Web UI | `#00FF00` |
-| Bit shape | Square, Rectangle. Rectangles get wider when seconds are off | Square |
+| Bit shape | Square (3×3), Rectangle (6×3), Long rectangle (9×3), Fill the bar (as wide as fits) | Square |
 | Spacing | Tight, Medium, Wide | Medium |
 | Show seconds | On, off | On |
 | Time format | 24-hour, 12-hour | 24-hour |
+
+Long rectangles with seconds do not fit at wide spacing, so they are drawn at medium spacing then.
 
 The app reads its settings when it starts. Open it again to see a change.
 

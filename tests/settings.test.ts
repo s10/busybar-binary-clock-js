@@ -20,6 +20,12 @@ test("valid values are kept", () => {
   assert.deepEqual(resolveSettings(v), v);
 });
 
+test("every shape is accepted", () => {
+  for (const shape of ["square", "rectangle", "long", "fill"]) {
+    assert.equal(resolveSettings({ shape }).shape, shape);
+  }
+});
+
 test("a bad field falls back alone", () => {
   const s = resolveSettings({ color: "pink", shape: "rectangle", spacing: 3, show_seconds: "yes", time_format: "12h" });
   assert.deepEqual(s, { ...DEFAULTS, shape: "rectangle", time_format: "12h" });

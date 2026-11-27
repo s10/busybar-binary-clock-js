@@ -27,7 +27,9 @@
       "default": "square",
       "options": [
         { "value": "square", "label": "Square" },
-        { "value": "rectangle", "label": "Rectangle" }
+        { "value": "rectangle", "label": "Rectangle" },
+        { "value": "long", "label": "Long rectangle" },
+        { "value": "fill", "label": "Fill the bar" }
       ]
     },
     "spacing": {

@@ -63,9 +63,21 @@ test("frameGrid span for every shape, spacing and column count", () => {
     ["rectangle", "tight", 6, 13, 57],
     ["rectangle", "medium", 6, 9, 62],
     ["rectangle", "wide", 6, 2, 69],
-    ["rectangle", "tight", 4, 13, 57],
-    ["rectangle", "medium", 4, 9, 62],
-    ["rectangle", "wide", 4, 3, 68],
+    ["rectangle", "tight", 4, 21, 49],
+    ["rectangle", "medium", 4, 19, 52],
+    ["rectangle", "wide", 4, 15, 56],
+    ["long", "tight", 6, 4, 66],
+    ["long", "medium", 6, 0, 71],
+    ["long", "wide", 6, 0, 71],
+    ["long", "tight", 4, 15, 55],
+    ["long", "medium", 4, 13, 58],
+    ["long", "wide", 4, 9, 62],
+    ["fill", "tight", 6, 1, 69],
+    ["fill", "medium", 6, 0, 71],
+    ["fill", "wide", 6, 2, 69],
+    ["fill", "tight", 4, 1, 69],
+    ["fill", "medium", 4, 1, 70],
+    ["fill", "wide", 4, 1, 70],
   ];
 
   for (const [shape, spacing, n, first, last] of cases) {
@@ -74,17 +86,27 @@ test("frameGrid span for every shape, spacing and column count", () => {
   }
 });
 
-test("rectangle bits widen when seconds are off, squares do not", () => {
+test("bit widths per shape", () => {
   const widths = (shape: Shape, spacing: Spacing, n: number) => {
     const row = frameGrid([8, 8, 8, 8, 8, 8].slice(0, n), { ...DEFAULTS, shape, spacing })[1];
-    return (row.match(/#+/g) ?? []).map((run) => run.length);
+    return [...new Set((row.match(/#+/g) ?? []).map((run) => run.length))];
   };
 
-  assert.deepEqual(widths("rectangle", "tight", 6), [6, 6, 6, 6, 6, 6]);
-  assert.deepEqual(widths("rectangle", "tight", 4), [10, 10, 10, 10]);
-  assert.deepEqual(widths("rectangle", "medium", 4), [11, 11, 11, 11]);
-  assert.deepEqual(widths("rectangle", "wide", 4), [12, 12, 12, 12]);
-  assert.deepEqual(widths("square", "wide", 4), [3, 3, 3, 3]);
+  for (const n of [6, 4]) {
+    assert.deepEqual(widths("square", "wide", n), [3]);
+    assert.deepEqual(widths("rectangle", "tight", n), [6]);
+    assert.deepEqual(widths("long", "tight", n), [9]);
+  }
+  assert.deepEqual(["tight", "medium", "wide"].map((sp) => widths("fill", sp as Spacing, 6)), [[10], [9], [6]]);
+  assert.deepEqual(["tight", "medium", "wide"].map((sp) => widths("fill", sp as Spacing, 4)), [[16], [15], [13]]);
+});
+
+test("a fixed shape that does not fit uses the next narrower spacing", () => {
+  const six = [1, 4, 5, 4, 3, 7];
+  const grid = (spacing: Spacing, n: number) => frameGrid(six.slice(0, n), { ...DEFAULTS, shape: "long", spacing });
+
+  assert.deepEqual(grid("wide", 6), grid("medium", 6));
+  assert.notDeepEqual(grid("wide", 4), grid("medium", 4));
 });
 
 test("msToNextSecond lands on the next whole second", () => {

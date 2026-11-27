@@ -1,12 +1,10 @@
-import type { Settings, Spacing } from "./settings.ts";
+import type { Settings, Shape, Spacing } from "./settings.ts";
 
 export const WIDTH = 72;
 export const HEIGHT = 16;
 
 const BIT_HEIGHT = 3;
-const SQUARE_WIDTH = 3;
-const RECTANGLE_WIDTH = 6;
-const FULL_COLUMNS = 6;
+const FIXED_BIT_WIDTH: Record<Exclude<Shape, "fill">, number> = { square: 3, rectangle: 6, long: 9 };
 
 interface Gaps {
   pair: number;
@@ -19,20 +17,26 @@ const GAPS: Record<Spacing, Gaps> = {
   wide: { pair: 4, group: 10 },
 };
 
+const WIDEST_FIRST: Spacing[] = ["wide", "medium", "tight"];
+
 function gapsWidth(columns: number, gaps: Gaps): number {
   const pairs = columns / 2;
   return pairs * gaps.pair + (pairs - 1) * gaps.group;
 }
 
-/** Rectangles widen so that fewer columns keep the width of the six-column layout. */
-function bitWidth(settings: Settings, columns: number): number {
-  if (settings.shape === "square") {
-    return SQUARE_WIDTH;
+function layout(settings: Settings, columns: number): { bit: number; gaps: Gaps } {
+  if (settings.shape === "fill") {
+    const gaps = GAPS[settings.spacing];
+    return { bit: Math.floor((WIDTH - gapsWidth(columns, gaps)) / columns), gaps };
   }
 
-  const gaps = GAPS[settings.spacing];
-  const fullWidth = FULL_COLUMNS * RECTANGLE_WIDTH + gapsWidth(FULL_COLUMNS, gaps);
-  return Math.floor((fullWidth - gapsWidth(columns, gaps)) / columns);
+  const bit = FIXED_BIT_WIDTH[settings.shape];
+  let i = WIDEST_FIRST.indexOf(settings.spacing);
+  while (i < WIDEST_FIRST.length - 1 && columns * bit + gapsWidth(columns, GAPS[WIDEST_FIRST[i]]) > WIDTH) {
+    i++;
+  }
+
+  return { bit, gaps: GAPS[WIDEST_FIRST[i]] };
 }
 
 export function msToNextSecond(nowMs: number): number {
@@ -57,8 +61,7 @@ export function timeDigits(now: Date, settings: Settings): number[] {
 
 /** HEIGHT rows of WIDTH characters: "." background, "o" 0 bit, "#" 1 bit. */
 export function frameGrid(digits: number[], settings: Settings): string[] {
-  const gaps = GAPS[settings.spacing];
-  const bit = bitWidth(settings, digits.length);
+  const { bit, gaps } = layout(settings, digits.length);
   const width = digits.length * bit + gapsWidth(digits.length, gaps);
   const left = Math.floor((WIDTH - width) / 2);
   const blank = ".".repeat(WIDTH);
