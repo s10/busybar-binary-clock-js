@@ -2,13 +2,19 @@
 
 A clock for the [BUSY Bar](https://busy.app) that shows the time as columns of binary digits.
 
-![Binary Clock at 15:19:08](screenshots/1.png)
+![Binary Clock at 15:19:08, squares](screenshots/1-large.png)
 
 ## How to read it
 
 Each column is one decimal digit of the time: two columns for hours, two for minutes and two for seconds. A column has four bits, worth 8, 4, 2 and 1 from top to bottom. Add up the lit bits to get the digit.
 
 In the picture above the columns read 1, 5, 1, 9, 0, 8, which is 15:19:08.
+
+With rectangle bits and wide spacing, at 15:27:29:
+
+![Binary Clock at 15:27:29, rectangles](screenshots/2-large.png)
+
+The enlarged pictures are drawn from the 72×16 captures in `screenshots/1.png` and `screenshots/2.png`, which come from a BUSY Bar.
 
 ## Settings
 
