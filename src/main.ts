@@ -1,9 +1,7 @@
 import { appsSettingsGet, BusyBarAppClient, displayDraw, generateXpm2 } from "@busy-app/busy-lib";
 import { id as APP } from "./appmeta/manifest.json";
-import { frameGrid, timeDigits } from "./frame.ts";
+import { frameGrid, msToNextSecond, timeDigits } from "./frame.ts";
 import { BACKGROUND, DEFAULTS, OFF_COLOR, onColor, resolveSettings } from "./settings.ts";
-
-const REDRAW_INTERVAL_MS = 1000;
 
 const client = new BusyBarAppClient({ addr: __BUSY_ADDR__ });
 
@@ -24,17 +22,14 @@ async function loadSettings() {
 
 function main() {
   let stopped = false;
-  let drawing = false;
   let shownFrame = "";
   let palette: Record<string, string> = {};
-  let redrawTimer: ReturnType<typeof setInterval> | undefined;
+  let redrawTimer: ReturnType<typeof setTimeout> | undefined;
 
   async function draw() {
-    if (stopped || drawing) {
+    if (stopped) {
       return;
     }
-
-    drawing = true;
 
     try {
       const grid = frameGrid(timeDigits(new Date(), settings), settings);
@@ -49,19 +44,21 @@ function main() {
       }
     } catch (err) {
       report(err);
-    } finally {
-      drawing = false;
+    }
+  }
+
+  async function tick() {
+    await draw();
+
+    if (!stopped) {
+      redrawTimer = setTimeout(tick, msToNextSecond(Date.now()));
     }
   }
 
   async function start() {
     await loadSettings();
     palette = { ".": BACKGROUND, o: OFF_COLOR, "#": onColor(settings) };
-    await draw();
-
-    if (!stopped) {
-      redrawTimer = setInterval(draw, REDRAW_INTERVAL_MS);
-    }
+    await tick();
   }
 
   const unbind = listen("input", (event) => {
@@ -70,7 +67,7 @@ function main() {
     }
 
     stopped = true;
-    clearInterval(redrawTimer);
+    clearTimeout(redrawTimer);
 
     setTimeout(unbind, 10);
   });

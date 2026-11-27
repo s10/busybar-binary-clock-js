@@ -35,6 +35,10 @@ function bitWidth(settings: Settings, columns: number): number {
   return Math.floor((fullWidth - gapsWidth(columns, gaps)) / columns);
 }
 
+export function msToNextSecond(nowMs: number): number {
+  return 1000 - (nowMs % 1000);
+}
+
 /** Tens and ones of hours, minutes and, with show_seconds, seconds. */
 export function timeDigits(now: Date, settings: Settings): number[] {
   const hours = settings.time_format === "12h" ? now.getHours() % 12 || 12 : now.getHours();

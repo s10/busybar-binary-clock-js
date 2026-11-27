@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { frameGrid, timeDigits } from "../src/frame.ts";
+import { frameGrid, msToNextSecond, timeDigits } from "../src/frame.ts";
 import { DEFAULTS, type Shape, type Spacing } from "../src/settings.ts";
 
 const at = (h: number, m: number, s: number) => new Date(2026, 10, 27, h, m, s);
@@ -85,4 +85,11 @@ test("rectangle bits widen when seconds are off, squares do not", () => {
   assert.deepEqual(widths("rectangle", "medium", 4), [11, 11, 11, 11]);
   assert.deepEqual(widths("rectangle", "wide", 4), [12, 12, 12, 12]);
   assert.deepEqual(widths("square", "wide", 4), [3, 3, 3, 3]);
+});
+
+test("msToNextSecond lands on the next whole second", () => {
+  assert.equal(msToNextSecond(1500), 500);
+  assert.equal(msToNextSecond(1999), 1);
+  assert.equal(msToNextSecond(2000), 1000);
+  assert.equal(msToNextSecond(1795785600123), 877);
 });
